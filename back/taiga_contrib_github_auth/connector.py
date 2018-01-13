@@ -38,15 +38,15 @@ class GitHubApiError(ConnectorBaseException):
 CLIENT_ID = getattr(settings, "GITHUB_API_CLIENT_ID", None)
 CLIENT_SECRET = getattr(settings, "GITHUB_API_CLIENT_SECRET", None)
 
-URL = getattr(settings, "GITHUB_URL", "https://github.com/")
-API_URL = getattr(settings, "GITHUB_API_URL",  "https://api.github.com/")
+URL = getattr(settings, "GITHUB_URL", "https://accounts.google.com/")
+API_URL = getattr(settings, "GITHUB_API_URL",  "https://www.googleapis.com/")
 API_RESOURCES_URLS = {
     "login": {
-        "authorize": "login/oauth/authorize",
-        "access-token": "login/oauth/access_token"
+        "authorize": "o/oauth2/auth",
+        "access-token": "oauth2/v3/token"
     },
     "user": {
-        "profile": "user",
+        "profile": "plus/v1/people/me",
         "emails": "user/emails"
     }
 }
@@ -55,7 +55,7 @@ API_RESOURCES_URLS = {
 HEADERS = {"Accept": "application/json",}
 
 AuthInfo = namedtuple("AuthInfo", ["access_token"])
-User = namedtuple("User", ["id", "username", "full_name", "bio"])
+User = namedtuple("User", ["id", "username", "full_name", "email", "bio"])
 Email = namedtuple("Email", ["email", "is_primary"])
 
 
@@ -108,7 +108,7 @@ def _post(url:str, params:dict, headers:dict) -> dict:
 ######################################################
 
 def login(access_code:str, client_id:str=CLIENT_ID, client_secret:str=CLIENT_SECRET,
-          headers:dict=HEADERS):
+        headers:dict=HEADERS, redirect_uro:str=REDIRECT_URI):
     """
     Get access_token fron an user authorized code, the client id and the client secret key.
     (See https://developer.github.com/v3/oauth/#web-application-flow).
@@ -118,11 +118,12 @@ def login(access_code:str, client_id:str=CLIENT_ID, client_secret:str=CLIENT_SEC
                                                      "with the sysadmins. Maybe they're snoozing in a "
                                                      "secret hideout of the data center.")})
 
-    url = urljoin(URL, "login/oauth/access_token")
+    url = _build_url("login", "access-token")
     params={"code": access_code,
             "client_id": client_id,
             "client_secret": client_secret,
-            "scope": "user:emails"}
+            "grant_type": "authorization_code",
+            "redirect_uri": redirect_uri}
     data = _post(url, params=params, headers=headers)
     return AuthInfo(access_token=data.get("access_token", None))
 
@@ -135,8 +136,9 @@ def get_user_profile(headers:dict=HEADERS):
     url = _build_url("user", "profile")
     data = _get(url, headers=headers)
     return User(id=data.get("id", None),
-                username=data.get("login", None),
-                full_name=(data.get("name", None) or ""),
+                username=data.get("name", None).get("givenName", None) + data.get("name", None).get("familyName", None),
+                full_name=(data.get("displayName", None) or ""),
+                email=(data.get("emails", None)[0].get("value", None) or ""),
                 bio=(data.get("bio", None) or ""))
 
 
@@ -162,11 +164,12 @@ def me(access_code:str) -> tuple:
     auth_info = login(access_code)
 
     headers = HEADERS.copy()
-    headers["Authorization"] = "token {}".format(auth_info.access_token)
+    headers["Authorization"] = "Bearer {}".format(auth_info.access_token)
 
     user = get_user_profile(headers=headers)
-    emails = get_user_emails(headers=headers)
+    #emails = get_user_emails(headers=headers)
 
-    primary_email = next(filter(lambda x: x.is_primary, emails))
-    return primary_email.email, user
+    #primary_email = next(filter(lambda x: x.is_primary, emails))
+    #return primary_email.email, user
+    return user
 

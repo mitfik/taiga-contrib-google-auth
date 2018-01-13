@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'taiga-contrib-github-auth',
-    version = ":versiontools:taiga_contrib_github_auth:",
+    version = "1.0.0",
     description = "The Taiga plugin for github authentication",
     long_description = "",
     keywords = 'taiga, github, auth, plugin',

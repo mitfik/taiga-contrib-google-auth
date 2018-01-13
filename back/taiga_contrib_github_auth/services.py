@@ -80,10 +80,10 @@ def github_login_func(request):
     code = request.DATA.get('code', None)
     token = request.DATA.get('token', None)
 
-    email, user_info = connector.me(code)
+    user_info = connector.me(code)
 
     user = github_register(username=user_info.username,
-                           email=email,
+                           email=user_info.email,
                            full_name=user_info.full_name,
                            github_id=user_info.id,
                            bio=user_info.bio,
