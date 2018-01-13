@@ -126,7 +126,7 @@ def login(access_code:str, client_id:str=CLIENT_ID, client_secret:str=CLIENT_SEC
             "response_type": "code",
             "redirect_uri": redirect_uri}
     data = _post(url, params=params, headers=headers)
-    return AuthInfo(access_token=data.get("access_token", None))
+    return AuthInfo(access_token=data.get("code", None))
 
 
 def get_user_profile(headers:dict=HEADERS):
