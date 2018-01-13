@@ -108,7 +108,7 @@ def _post(url:str, params:dict, headers:dict) -> dict:
 ######################################################
 
 def login(access_code:str, client_id:str=CLIENT_ID, client_secret:str=CLIENT_SECRET,
-        headers:dict=HEADERS, redirect_uro:str=REDIRECT_URI):
+        headers:dict=HEADERS, redirect_uri:str=REDIRECT_URI):
     """
     Get access_token fron an user authorized code, the client id and the client secret key.
     (See https://developer.github.com/v3/oauth/#web-application-flow).
