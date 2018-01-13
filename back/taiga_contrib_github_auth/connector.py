@@ -40,6 +40,8 @@ CLIENT_SECRET = getattr(settings, "GITHUB_API_CLIENT_SECRET", None)
 
 URL = getattr(settings, "GITHUB_URL", "https://accounts.google.com/")
 API_URL = getattr(settings, "GITHUB_API_URL",  "https://www.googleapis.com/")
+REDIRECT_URL = getattr(settings, "REDIRECT_URL", None)
+
 API_RESOURCES_URLS = {
     "login": {
         "authorize": "o/oauth2/auth",
