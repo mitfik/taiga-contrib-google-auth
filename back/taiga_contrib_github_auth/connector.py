@@ -126,7 +126,6 @@ def login(access_code:str, client_id:str=CLIENT_ID, client_secret:str=CLIENT_SEC
             "client_id": client_id,
             "client_secret": client_secret,
             "grant_type": "authorization_code",
-            "response_type": "code",
             "redirect_uri": redirect_uri}
     data = _post(url, params=params, headers=headers)
     return AuthInfo(access_token=data.get("access_token", None))
