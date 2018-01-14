@@ -45,7 +45,7 @@ REDIRECT_URI = getattr(settings, "REDIRECT_URI", None)
 API_RESOURCES_URLS = {
     "login": {
         "authorize": "o/oauth2/auth",
-        "access-token": "o/auth2/token"
+        "access-token": "o/oauth2/token"
     },
     "user": {
         "profile": "plus/v1/people/me",
@@ -54,7 +54,8 @@ API_RESOURCES_URLS = {
 }
 
 
-HEADERS = {"Accept": "application/json",}
+HEADERS = {"Accept": "application/json"}
+HEADERS_POST = {"Accept": "application/json", "Content-Type": "application/x-www-form-urlencoded"}
 
 AuthInfo = namedtuple("AuthInfo", ["access_token"])
 User = namedtuple("User", ["id", "username", "full_name", "email", "bio"])
@@ -96,7 +97,7 @@ def _post(url:str, params:dict, headers:dict) -> dict:
     """
     Make a POST call.
     """
-    response = requests.post(url, params=params, headers=headers)
+    response = requests.post(url, data=params, headers=headers)
 
     data = response.json()
     if response.status_code != 200 or "error" in data:
@@ -110,7 +111,7 @@ def _post(url:str, params:dict, headers:dict) -> dict:
 ######################################################
 
 def login(access_code:str, client_id:str=CLIENT_ID, client_secret:str=CLIENT_SECRET,
-        headers:dict=HEADERS, redirect_uri:str=REDIRECT_URI):
+        headers:dict=HEADERS_POST, redirect_uri:str=REDIRECT_URI):
     """
     Get access_token fron an user authorized code, the client id and the client secret key.
     (See https://developer.github.com/v3/oauth/#web-application-flow).
@@ -120,7 +121,7 @@ def login(access_code:str, client_id:str=CLIENT_ID, client_secret:str=CLIENT_SEC
                                                      "with the sysadmins. Maybe they're snoozing in a "
                                                      "secret hideout of the data center.")})
 
-    url = _build_url("login", "access-token")
+    url = urljoin(URL, "o/oauth2/token")
     params={"code": access_code,
             "client_id": client_id,
             "client_secret": client_secret,
@@ -128,7 +129,7 @@ def login(access_code:str, client_id:str=CLIENT_ID, client_secret:str=CLIENT_SEC
             "response_type": "code",
             "redirect_uri": redirect_uri}
     data = _post(url, params=params, headers=headers)
-    return AuthInfo(access_token=data.get("access_code", None))
+    return AuthInfo(access_token=data.get("access_token", None))
 
 
 def get_user_profile(headers:dict=HEADERS):
